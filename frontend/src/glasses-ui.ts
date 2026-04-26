@@ -63,6 +63,17 @@ export function formatFeedItem(item: FeedItem): string {
   return [header, '', tweetText, separator, ...impactLines].join('\n')
 }
 
+/**
+ * Simple mode: show only the ticker impact lines — no tweet text, no header.
+ * Keeps the glasses display minimal when you only care about what moved.
+ */
+export function formatFeedItemSimple(item: FeedItem): string {
+  const impactLines = item.analysis.impacts.map(
+    (i) => `${arrow(i.direction)} ${i.ticker.padEnd(5)} ${i.confidence.padEnd(4)} ${i.reason}`,
+  )
+  return impactLines.join('\n')
+}
+
 export function formatLoading(): string {
   return ['TWEET ↻ live', '', 'Waiting for next tweet…'].join('\n')
 }

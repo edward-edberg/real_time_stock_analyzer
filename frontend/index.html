@@ -2,15 +2,57 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tweet Stock Impact — Even G2</title>
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
-  <body>
-    <div id="app" style="font-family: monospace; padding: 16px">
-      <button id="analyze-btn" style="font-size:18px; padding:12px 24px; cursor:pointer">
-        Analyze next tweet
-      </button>
-      <pre id="preview" style="margin-top:16px; background:#111; color:#eee; padding:16px; white-space:pre-wrap; min-height:200px">waiting...</pre>
+  <body class="bg-gray-950 text-white min-h-screen font-mono">
+
+    <div class="max-w-md mx-auto px-4 py-6 flex flex-col gap-4">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <h1 class="text-lg font-bold tracking-widest text-emerald-400">STOCK IMPACT</h1>
+        <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-gray-600"></span>
+      </div>
+
+      <!-- Tweet card -->
+      <div class="bg-gray-900 rounded-2xl p-4 border border-gray-800">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-xs text-gray-500 uppercase tracking-wider">Tweet</span>
+          <span id="tweet-author" class="text-xs text-emerald-400"></span>
+          <span id="tweet-time" class="text-xs text-gray-600 ml-auto"></span>
+        </div>
+        <p id="tweet-text" class="text-sm text-gray-200 leading-relaxed">Waiting for next tweet…</p>
+      </div>
+
+      <!-- Summary -->
+      <p id="summary-text" class="text-xs text-gray-500 italic px-1"></p>
+
+      <!-- Impact list -->
+      <div id="impacts" class="flex flex-col gap-2"></div>
+
+      <!-- Buttons -->
+      <div class="mt-2 flex gap-2">
+        <button
+          id="analyze-btn"
+          class="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-black font-bold tracking-wider transition-colors"
+        >
+          ANALYZE NEXT TWEET
+        </button>
+        <button
+          id="mode-btn"
+          class="px-4 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-gray-200 font-bold text-sm tracking-wider transition-colors"
+        >
+          REGULAR MODE
+        </button>
+      </div>
+
+      <!-- Glasses mirror (hidden, used by SDK) -->
+      <pre id="preview" class="hidden"></pre>
+
     </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
