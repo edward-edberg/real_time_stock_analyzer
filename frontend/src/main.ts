@@ -50,7 +50,6 @@ async function main() {
   showPreview(lastContent)
   connectBridge() // runs in background, no await
   document.getElementById('analyze-btn')?.addEventListener('click', tick)
-  tick()
 }
 
 main().catch((err) => console.error('fatal:', err))
