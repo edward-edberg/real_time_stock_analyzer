@@ -1,6 +1,7 @@
 import { waitForEvenAppBridge } from '@evenrealities/even_hub_sdk'
 import type { EvenAppBridge } from '@evenrealities/even_hub_sdk'
 import { formatFeedItem, formatFeedItemSimple, formatLoading, formatError, initPage, updatePage } from './glasses-ui'
+import { renderCharts } from './browser-ui'
 import type { FeedItem } from './types'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
@@ -97,6 +98,7 @@ async function tick() {
     console.log('feed:', item.tweet_id, item.analysis.summary)
     lastItem = item
     renderDashboard(item)
+    renderCharts(item.analysis.impacts)
     lastContent = buildGlassesContent(item)
     setStatus('ok')
   } catch (err) {
