@@ -100,7 +100,7 @@ class FeedItem(BaseModel):
 def analyze_tweet(tweet_text: str) -> Analysis:
     """Send tweet to Claude, parse JSON response into Analysis."""
     msg = claude().messages.create(
-        model="claude-opus-4-7",
+        model="claude-opus-4-6",
         max_tokens=512,
         messages=[{"role": "user", "content": ANALYSIS_PROMPT + tweet_text}],
     )
