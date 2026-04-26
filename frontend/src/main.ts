@@ -1,6 +1,7 @@
 import { waitForEvenAppBridge } from '@evenrealities/even_hub_sdk'
 import type { EvenAppBridge } from '@evenrealities/even_hub_sdk'
 import { formatFeedItem, formatLoading, formatError, initPage, updatePage } from './glasses-ui'
+import { renderCharts } from './browser-ui'
 import type { FeedItem } from './types'
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
@@ -29,6 +30,7 @@ async function tick() {
     const item = await fetchFeed()
     console.log('feed:', item.tweet_id, item.analysis.summary)
     lastContent = formatFeedItem(item)
+    renderCharts(item.analysis.impacts)
   } catch (err) {
     console.error('feed fetch failed:', err)
     lastContent = formatError(String(err))
