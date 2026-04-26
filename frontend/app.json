@@ -1,18 +1,19 @@
 {
-  "$comment": "Even Hub plugin manifest. See https://hub.evenrealities.com/docs/reference/packaging for full schema.",
-  "id": "com.edward.tweet-stock-impact",
+  "package_id": "com.edward.tweetstock",
+  "edition": "202601",
   "name": "Tweet Stock Impact",
   "version": "0.0.1",
+  "min_app_version": "2.0.0",
   "min_sdk_version": "0.0.10",
+  "entrypoint": "index.html",
   "description": "Live analysis of political tweets and their projected stock-market impact.",
-  "entry": "index.html",
+  "supported_languages": ["en"],
   "permissions": [
     {
       "name": "network",
-      "desc": "Polls a backend for tweet feeds and Claude-generated stock impact analysis.",
-      "$comment": "EVERY production domain you fetch from MUST be listed here, full origin only. Wildcards not supported. Replace the placeholder before packaging.",
+      "desc": "Polls backend for tweet feeds and Claude-generated stock impact analysis.",
       "whitelist": [
-        "https://your-backend.example.com"
+        "http://192.168.0.119:8000"
       ]
     }
   ]
