@@ -1,7 +1,6 @@
 import type { Impact } from './types'
 
 const FINNHUB_KEY = import.meta.env.VITE_FINNHUB_API_KEY
-const BROKER_KEY = 'preferred_broker'
 
 interface Quote {
   c: number  // current price
@@ -27,16 +26,7 @@ const BROKERS: Record<string, { name: string; logo: string; url: (ticker: string
   },
 }
 
-function getSavedBroker(): string | null {
-  return localStorage.getItem(BROKER_KEY)
-}
-
-function saveBroker(id: string) {
-  localStorage.setItem(BROKER_KEY, id)
-}
-
 function showBrokerModal(ticker: string): void {
-  // Remove existing modal if any
   document.getElementById('broker-modal')?.remove()
 
   const overlay = document.createElement('div')
@@ -58,12 +48,12 @@ function showBrokerModal(ticker: string): void {
 
   const sub = document.createElement('div')
   sub.style.cssText = 'color:#666;font-size:12px;margin-bottom:20px'
-  sub.textContent = 'Choose your broker (saved for next time)'
+  sub.textContent = 'Choose your broker'
 
   modal.appendChild(title)
   modal.appendChild(sub)
 
-  Object.entries(BROKERS).forEach(([id, broker]) => {
+  Object.entries(BROKERS).forEach(([, broker]) => {
     const btn = document.createElement('button')
     btn.style.cssText = [
       'display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px',
@@ -75,33 +65,21 @@ function showBrokerModal(ticker: string): void {
     btn.onmouseover = () => { btn.style.borderColor = '#22c55e' }
     btn.onmouseout  = () => { btn.style.borderColor = '#2a2a4a' }
     btn.onclick = () => {
-      saveBroker(id)
       overlay.remove()
       window.open(broker.url(ticker), '_blank', 'noopener,noreferrer')
     }
     modal.appendChild(btn)
   })
 
-  // Reset preference link
-  const reset = document.createElement('button')
-  reset.style.cssText = 'background:none;border:none;color:#444;font-size:11px;cursor:pointer;margin-top:4px;width:100%'
-  reset.textContent = 'Cancel'
-  reset.onclick = () => overlay.remove()
-  modal.appendChild(reset)
+  const cancel = document.createElement('button')
+  cancel.style.cssText = 'background:none;border:none;color:#444;font-size:11px;cursor:pointer;margin-top:4px;width:100%'
+  cancel.textContent = 'Cancel'
+  cancel.onclick = () => overlay.remove()
+  modal.appendChild(cancel)
 
   overlay.appendChild(modal)
-  // Click outside to dismiss
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove() }
   document.body.appendChild(overlay)
-}
-
-function openBroker(ticker: string) {
-  const saved = getSavedBroker()
-  if (saved && BROKERS[saved]) {
-    window.open(BROKERS[saved].url(ticker), '_blank', 'noopener,noreferrer')
-  } else {
-    showBrokerModal(ticker)
-  }
 }
 
 async function fetchQuote(ticker: string): Promise<Quote | null> {
@@ -197,10 +175,6 @@ export async function renderCharts(impacts: Impact[]): Promise<void> {
     tvContainer.className = 'tradingview-widget-container'
     addTradingViewWidget(tvContainer, impact.ticker, impact)
 
-    // Buy button — shows broker picker on first use, then goes directly
-    const saved = getSavedBroker()
-    const brokerLabel = saved && BROKERS[saved] ? `BUY ${impact.ticker} ON ${BROKERS[saved].name.toUpperCase()}` : `BUY ${impact.ticker}`
-
     const buyBtn = document.createElement('button')
     buyBtn.style.cssText = [
       'display:flex;align-items:center;justify-content:center;gap:8px;width:100%',
@@ -209,25 +183,15 @@ export async function renderCharts(impacts: Impact[]): Promise<void> {
       'border-radius:8px;border:none;cursor:pointer',
       'transition:background 0.15s',
     ].join(';')
-    buyBtn.textContent = brokerLabel
+    buyBtn.textContent = `BUY ${impact.ticker}`
     buyBtn.onmouseover = () => { buyBtn.style.background = '#16a34a' }
     buyBtn.onmouseout  = () => { buyBtn.style.background = '#22c55e' }
-    buyBtn.onclick = () => openBroker(impact.ticker)
-
-    // Small "change broker" link if preference already saved
-    const changeLink = document.createElement('button')
-    changeLink.style.cssText = 'display:block;background:none;border:none;color:#444;font-size:11px;cursor:pointer;margin-top:6px;width:100%;text-align:center'
-    changeLink.textContent = saved ? 'change broker' : ''
-    changeLink.onclick = () => {
-      localStorage.removeItem(BROKER_KEY)
-      showBrokerModal(impact.ticker)
-    }
+    buyBtn.onclick = () => showBrokerModal(impact.ticker)
 
     card.appendChild(header)
     card.appendChild(reason)
     card.appendChild(tvContainer)
     card.appendChild(buyBtn)
-    card.appendChild(changeLink)
     row.appendChild(card)
   })
 }
