@@ -1,11 +1,107 @@
 import type { Impact } from './types'
 
 const FINNHUB_KEY = import.meta.env.VITE_FINNHUB_API_KEY
+const BROKER_KEY = 'preferred_broker'
 
 interface Quote {
   c: number  // current price
   d: number  // change
   dp: number // percent change
+}
+
+const BROKERS: Record<string, { name: string; logo: string; url: (ticker: string) => string }> = {
+  schwab: {
+    name: 'Charles Schwab',
+    logo: '🟦',
+    url: (t) => `https://client.schwab.com/app/trade/tom/trade?ACTION=Buy&SYMBOL=${t}`,
+  },
+  robinhood: {
+    name: 'Robinhood',
+    logo: '🟢',
+    url: (t) => `https://robinhood.com/stocks/${t}`,
+  },
+  webull: {
+    name: 'Webull',
+    logo: '🔵',
+    url: (t) => `https://www.webull.com/quote/${t.toLowerCase()}`,
+  },
+}
+
+function getSavedBroker(): string | null {
+  return localStorage.getItem(BROKER_KEY)
+}
+
+function saveBroker(id: string) {
+  localStorage.setItem(BROKER_KEY, id)
+}
+
+function showBrokerModal(ticker: string): void {
+  // Remove existing modal if any
+  document.getElementById('broker-modal')?.remove()
+
+  const overlay = document.createElement('div')
+  overlay.id = 'broker-modal'
+  overlay.style.cssText = [
+    'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000',
+    'display:flex;align-items:center;justify-content:center',
+  ].join(';')
+
+  const modal = document.createElement('div')
+  modal.style.cssText = [
+    'background:#1a1a2e;border:1px solid #2a2a4a;border-radius:16px',
+    'padding:24px;width:320px;max-width:90vw',
+  ].join(';')
+
+  const title = document.createElement('div')
+  title.style.cssText = 'color:#fff;font-weight:bold;font-size:15px;margin-bottom:4px'
+  title.textContent = `Buy ${ticker}`
+
+  const sub = document.createElement('div')
+  sub.style.cssText = 'color:#666;font-size:12px;margin-bottom:20px'
+  sub.textContent = 'Choose your broker (saved for next time)'
+
+  modal.appendChild(title)
+  modal.appendChild(sub)
+
+  Object.entries(BROKERS).forEach(([id, broker]) => {
+    const btn = document.createElement('button')
+    btn.style.cssText = [
+      'display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px',
+      'background:#0d0d1a;border:1px solid #2a2a4a;border-radius:10px',
+      'color:#fff;font-size:14px;cursor:pointer;margin-bottom:10px',
+      'transition:border-color 0.15s',
+    ].join(';')
+    btn.innerHTML = `<span style="font-size:20px">${broker.logo}</span><span>${broker.name}</span>`
+    btn.onmouseover = () => { btn.style.borderColor = '#22c55e' }
+    btn.onmouseout  = () => { btn.style.borderColor = '#2a2a4a' }
+    btn.onclick = () => {
+      saveBroker(id)
+      overlay.remove()
+      window.open(broker.url(ticker), '_blank', 'noopener,noreferrer')
+    }
+    modal.appendChild(btn)
+  })
+
+  // Reset preference link
+  const reset = document.createElement('button')
+  reset.style.cssText = 'background:none;border:none;color:#444;font-size:11px;cursor:pointer;margin-top:4px;width:100%'
+  reset.textContent = 'Cancel'
+  reset.onclick = () => overlay.remove()
+  modal.appendChild(reset)
+
+  overlay.appendChild(modal)
+  // Click outside to dismiss
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove() }
+  document.body.appendChild(overlay)
+}
+
+function openBroker(ticker: string) {
+  const saved = getSavedBroker()
+  if (saved && BROKERS[saved]) {
+    window.open(BROKERS[saved].url(ticker), '_blank', 'noopener,noreferrer')
+  } else {
+    showBrokerModal(ticker)
+  }
 }
 
 async function fetchQuote(ticker: string): Promise<Quote | null> {
@@ -101,25 +197,37 @@ export async function renderCharts(impacts: Impact[]): Promise<void> {
     tvContainer.className = 'tradingview-widget-container'
     addTradingViewWidget(tvContainer, impact.ticker, impact)
 
-    const buyBtn = document.createElement('a')
-    buyBtn.href = `https://client.schwab.com/app/trade/tom/trade?ACTION=Buy&SYMBOL=${impact.ticker}`
-    buyBtn.target = '_blank'
-    buyBtn.rel = 'noopener noreferrer'
+    // Buy button — shows broker picker on first use, then goes directly
+    const saved = getSavedBroker()
+    const brokerLabel = saved && BROKERS[saved] ? `BUY ${impact.ticker} ON ${BROKERS[saved].name.toUpperCase()}` : `BUY ${impact.ticker}`
+
+    const buyBtn = document.createElement('button')
     buyBtn.style.cssText = [
-      'display:flex;align-items:center;justify-content:center;gap:8px',
+      'display:flex;align-items:center;justify-content:center;gap:8px;width:100%',
       'margin-top:12px;padding:10px',
       'background:#22c55e;color:#000;font-weight:bold;font-size:13px;letter-spacing:0.08em',
-      'border-radius:8px;text-decoration:none',
+      'border-radius:8px;border:none;cursor:pointer',
       'transition:background 0.15s',
     ].join(';')
-    buyBtn.textContent = `BUY ${impact.ticker} ON SCHWAB`
+    buyBtn.textContent = brokerLabel
     buyBtn.onmouseover = () => { buyBtn.style.background = '#16a34a' }
     buyBtn.onmouseout  = () => { buyBtn.style.background = '#22c55e' }
+    buyBtn.onclick = () => openBroker(impact.ticker)
+
+    // Small "change broker" link if preference already saved
+    const changeLink = document.createElement('button')
+    changeLink.style.cssText = 'display:block;background:none;border:none;color:#444;font-size:11px;cursor:pointer;margin-top:6px;width:100%;text-align:center'
+    changeLink.textContent = saved ? 'change broker' : ''
+    changeLink.onclick = () => {
+      localStorage.removeItem(BROKER_KEY)
+      showBrokerModal(impact.ticker)
+    }
 
     card.appendChild(header)
     card.appendChild(reason)
     card.appendChild(tvContainer)
     card.appendChild(buyBtn)
+    card.appendChild(changeLink)
     row.appendChild(card)
   })
 }
