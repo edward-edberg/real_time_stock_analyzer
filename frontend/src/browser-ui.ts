@@ -84,7 +84,7 @@ export async function renderCharts(impacts: Impact[]): Promise<void> {
       <span style="color:${arrowColor};font-size:18px">${isUp ? '▲' : '▼'}</span>
       <span style="background:#2a2a3a;color:#888;padding:2px 8px;border-radius:4px;font-size:11px;letter-spacing:0.05em">HIGH</span>
       ${
-        quote
+        quote && quote.c != null
           ? `<span style="color:${priceColor};font-size:13px;margin-left:auto;font-weight:600">
                $${quote.c.toFixed(2)}
                <span style="opacity:0.8">${quote.dp >= 0 ? '+' : ''}${quote.dp.toFixed(2)}%</span>
