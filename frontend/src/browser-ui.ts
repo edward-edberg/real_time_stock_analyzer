@@ -101,9 +101,25 @@ export async function renderCharts(impacts: Impact[]): Promise<void> {
     tvContainer.className = 'tradingview-widget-container'
     addTradingViewWidget(tvContainer, impact.ticker, impact)
 
+    const buyBtn = document.createElement('a')
+    buyBtn.href = `https://client.schwab.com/app/trade/tom/trade?ACTION=Buy&SYMBOL=${impact.ticker}`
+    buyBtn.target = '_blank'
+    buyBtn.rel = 'noopener noreferrer'
+    buyBtn.style.cssText = [
+      'display:flex;align-items:center;justify-content:center;gap:8px',
+      'margin-top:12px;padding:10px',
+      'background:#22c55e;color:#000;font-weight:bold;font-size:13px;letter-spacing:0.08em',
+      'border-radius:8px;text-decoration:none',
+      'transition:background 0.15s',
+    ].join(';')
+    buyBtn.textContent = `BUY ${impact.ticker} ON SCHWAB`
+    buyBtn.onmouseover = () => { buyBtn.style.background = '#16a34a' }
+    buyBtn.onmouseout  = () => { buyBtn.style.background = '#22c55e' }
+
     card.appendChild(header)
     card.appendChild(reason)
     card.appendChild(tvContainer)
+    card.appendChild(buyBtn)
     row.appendChild(card)
   })
 }
