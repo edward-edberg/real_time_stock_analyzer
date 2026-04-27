@@ -48,7 +48,7 @@ function truncate(s: string, max: number): string {
  * tweet text as possible while always showing all impacts.
  */
 export function formatFeedItem(item: FeedItem): string {
-  const header = `TWEET ${shortTime(item.timestamp)}`
+  const header = `${item.author}  ${shortTime(item.timestamp)}`
 
   // Each impact row: e.g. "▲ NVDA  HIGH  Tariffs benefit US chip makers"
   const impactLines = item.analysis.impacts.map(
@@ -64,14 +64,16 @@ export function formatFeedItem(item: FeedItem): string {
 }
 
 /**
- * Simple mode: show only the ticker impact lines — no tweet text, no header.
- * Keeps the glasses display minimal when you only care about what moved.
+ * Simple mode: author + ticker/direction only — no tweet text, no confidence, no reason.
+ * e.g.
+ *   @realDonaldTrump
+ *   ▲ NVDA  ▲ INTC  ▼ TSM
  */
 export function formatFeedItemSimple(item: FeedItem): string {
-  const impactLines = item.analysis.impacts.map(
-    (i) => `${arrow(i.direction)} ${i.ticker.padEnd(5)} ${i.confidence.padEnd(4)} ${i.reason}`,
-  )
-  return impactLines.join('\n')
+  const tickerLine = item.analysis.impacts
+    .map((i) => `${arrow(i.direction)} ${i.ticker}`)
+    .join('  ')
+  return `${item.author}\n${tickerLine}`
 }
 
 export function formatLoading(): string {
