@@ -118,6 +118,7 @@ async function connectBridge() {
 }
 
 async function main() {
+  localStorage.removeItem('preferred_broker')
   showPreview(lastContent)
   connectBridge()
   document.getElementById('analyze-btn')?.addEventListener('click', tick)
